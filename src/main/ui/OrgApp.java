@@ -3,9 +3,9 @@
 package ui;
 
 import model.ItemList;
-
 import java.util.Scanner;
 
+//The OrgApp (Organization App) class creates a console based interface to interact with the Items and Item List
 public class OrgApp {
     ItemList itemList = new ItemList();
     private Scanner input;
@@ -85,6 +85,7 @@ public class OrgApp {
     private void addItem() {
         System.out.print("Enter name of the item: ");
         String itemName = input.next();
+        itemName += input.nextLine();
 
         System.out.print("Enter category of the item:\n");
         String itemCategory = categorySelection();
@@ -145,7 +146,7 @@ public class OrgApp {
         String selected = searchSelection();
         System.out.println("\nYour search result for category " + selected + " returns these items : ");
         if (itemList.countListItems() == 0) {
-            System.out.println("Your list is empty!");
+            System.out.println("Your list is empty!\n");
         } else {
             System.out.println("\nHere is a list of all the items : \n");
             System.out.println(itemList.allListItems());
@@ -235,11 +236,17 @@ public class OrgApp {
             System.out.println(itemList.allListItems());
             System.out.println("Provide the name of the item you wish to edit");
             editName = input.next();
+            editName += input.nextLine();
 
             if (itemList.nameExists(editName)) {
-                return itemList.allListItems();
+                System.out.println("Provide the new name you wish to use:");
+                editNewName = input.next();
+                editNewName += input.nextLine();
+                itemList.editItemName(editName, editNewName);
+                System.out.println("\nHere is a new list of all the items : \n");
+                System.out.println(itemList.allListItems());
             } else {
-                System.out.println("This item doesn't exist. Please try again. /n");
+                System.out.println("This item doesn't exist. Please try again. \n");
                 return itemList.allListItems();
             }
         }
@@ -254,6 +261,7 @@ public class OrgApp {
             System.out.println(itemList.allListItems());
             System.out.println("Provide the name of the item you wish to delete");
             delName = input.next();
+            delName += input.nextLine();
 
             if (itemList.nameExists(delName)) {
                 itemList.delItemName(delName);
@@ -261,12 +269,12 @@ public class OrgApp {
                 System.out.println("\nYour item " + delName + " has been removed.");
                 System.out.println("\nHere is an updated list of all the items : \n");
                 if (itemList.countListItems() == 0) {
-                    System.out.println("Actually.. your list is now empty!");
+                    System.out.println("Actually.. your list is now empty!\n");
                 } else {
                     System.out.println(itemList.allListItems());
                 }
             } else {
-                System.out.println("This item doesn't exist. Please try again. /n");
+                System.out.println("This item doesn't exist. Please try again.\n");
             }
         }
     }

@@ -59,11 +59,18 @@ public class ItemListTest {
 
     @Test
     public void testDeleteName() {
+        assertEquals(0, myItemList.countListItems());
+
         myItemList.addItem(initialName, initialCategory, initialStatus, initialBal);
+        assertEquals(1, myItemList.countListItems());
+
+        myItemList.delItemName("DummyItem");
         assertEquals(1, myItemList.countListItems());
 
         myItemList.delItemName(initialName);
         assertEquals(0, myItemList.countListItems());
+
+
     }
 
     @Test
@@ -80,5 +87,12 @@ public class ItemListTest {
                 + "Thing 17 : Clothing, Sell, $" + 70 + "\n", myItemList.allListItems());
     }
 
-    //TODO : create a test for nameExists
+    @Test
+    public void testNameExists(){
+        assertFalse(myItemList.nameExists("Test"));
+
+        myItemList.addItem(initialName, initialCategory, initialStatus, initialBal);
+        assertTrue(myItemList.nameExists(initialName));
+        assertFalse(myItemList.nameExists("DummyItem"));
+    }
 }

@@ -2,15 +2,14 @@ package model;
 
 import java.util.ArrayList;
 
-import static com.sun.xml.internal.ws.util.StringUtils.capitalize;
-
+//This ItemList class represents a list of the Items, with possible operations (ex. add, delete, edit, and more)
 public class ItemList {
     private ArrayList<Item> itemList = new ArrayList<>();
     private String checkName;
     private String delItem;
 
     /*
-     * REQUIRES: Name must be unique, dollar value must be whole dollars and be $0 or above
+     * REQUIRES: Name must be unique, dollar value must be a non-negative integer
      * MODIFIES: this
      * EFFECTS: Add an item to the list, given the name, category, status, and value of said item
      */
@@ -41,9 +40,8 @@ public class ItemList {
     }
 
     /*
-     * EFFECTS: Returns a particular item, given an index value
+     * EFFECTS: Returns an item in a list, given an index value
      */
-
     public Item returnListItem(int val) {
         return itemList.get(val);
     }
@@ -54,7 +52,7 @@ public class ItemList {
     //TODO: also be able to search by type, status, or name
     public String searchItemCategory(String searchCategory) {
         String searchCat = "";
-        searchCategory = capitalize(searchCategory);
+        searchCategory = searchCategory;
         for (int i = 0; i < itemList.size(); i++) {
             if (searchCategory.equals(itemList.get(i).getCategory())) {
                 searchCat = searchCat + itemList.get(i).getName() + "\n";
@@ -65,7 +63,7 @@ public class ItemList {
 
     /*
      * REQUIRES: New name must be unique, name being searched is case sensitive
-     * MODIFIES: Item's name, this
+     * MODIFIES: Item, this
      * EFFECTS: Updates the name of an existing item in the list, to a new name
      */
     //TODO : be able to edit any field, not just name + update README
@@ -81,7 +79,7 @@ public class ItemList {
     }
 
     /*
-     * REQUIRES: Name must be case sensitive
+     * REQUIRES: Name is be case sensitive
      * MODIFIES: this
      * EFFECTS: Deletes the item corresponding to the name provided from the list
      */
@@ -95,17 +93,12 @@ public class ItemList {
     }
 
     /*
-     * REQUIRES: New name must be unique, name being searched is case sensitive
-     * MODIFIES: Item's name, this
-     * EFFECTS: Updates the name of an existing item in the list, to a new name
+     * EFFECTS: Checks if, given an item name, it exists in the list. Name is case sensitive.
      */
     public Boolean nameExists(String checkName) {
         for (int i = 0; i < itemList.size(); i++) {
             if (checkName.trim().equals(itemList.get(i).getName())) {
                 return true;
-            }
-            else {
-                return false;
             }
         }
         return false;

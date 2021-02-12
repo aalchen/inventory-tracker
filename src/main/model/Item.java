@@ -1,7 +1,6 @@
 package model;
 
-import static com.sun.xml.internal.ws.util.StringUtils.capitalize;
-
+// The Item class represents the properties of an item (its name, category, status, and dollar value)
 public class Item {
     private String name;
     private String category;
@@ -13,10 +12,10 @@ public class Item {
      * EFFECTS: Assigns variables to object, and capitalizes strings
      */
     public Item(String name, String category, String status, int value) {
-        this.name = capitalize(name).trim();
+        this.name = name.trim();
         this.value = value;
-        this.category = capitalize(category);
-        this.status = capitalize(status);
+        this.category = category;
+        this.status = status;
     }
 
     /*
@@ -36,7 +35,7 @@ public class Item {
     }
 
     /*
-     * REQUIRES: Value cannot be in the negative, must be 0 or above and whole numbers
+     * REQUIRES: Integer must be a non-negative value
      * MODIFIES: this
      * EFFECTS: Changes existing value to the new value
      */
@@ -79,4 +78,5 @@ public class Item {
     public String getCategory() {
         return category;
     }
+
 }
