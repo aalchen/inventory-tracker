@@ -1,41 +1,80 @@
-// To build this OrgApp class, I used TellerApp's UI class as a reference and source
-
 package ui;
 
 import model.ItemList;
-import java.util.Scanner;
+import persistence.JsonReader;
+import persistence.JsonWriter;
 
-//The OrgApp (Organization App) class creates a console based interface to interact with the Items and Item List
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+
+//Represents a console based UI for my Organization App, to interact with the items in the item list
+//To build this OrgApp class, I used TellerApp's UI class as a reference and source
+//I used the JsonSerializationDemo to ensure the Json reading/writing was working
 public class OrgApp {
-    ItemList itemList = new ItemList();
+    ItemList itemList = new ItemList("Amy's Item List");
     private Scanner input;
     private String delName;
     private String command;
+    private static final String JSON_STORE = "./data/itemlist.json";
+    private JsonWriter jsonWriter;
+    private JsonReader jsonReader;
 
     // EFFECTS: runs the Organization application
     public OrgApp() {
+        jsonWriter = new JsonWriter(JSON_STORE);
+        jsonReader = new JsonReader(JSON_STORE);
         runApp();
+    }
+
+    // EFFECTS: saves the item list to file
+    private void saveItemList() {
+        try {
+            jsonWriter.open();
+            jsonWriter.write(itemList);
+            jsonWriter.close();
+            System.out.println("Saved " + itemList.getName() + " to " + JSON_STORE + "\n");
+        } catch (FileNotFoundException e) {
+            System.out.println("Unable to write to file: " + JSON_STORE);
+        }
+    }
+
+    // MODIFIES: this
+    // EFFECTS: loads item list from file
+    private void loadItemList() {
+        try {
+            itemList = jsonReader.read();
+            System.out.println("Loaded " + itemList.getName() + " from " + JSON_STORE + "\n");
+        } catch (IOException e) {
+            System.out.println("Unable to read from file: " + JSON_STORE);
+        }
     }
 
     // MODIFIES: this
     // EFFECTS: processes user input
     private void runApp() {
         boolean keepGoing = true;
-
         init();
-
         while (keepGoing) {
             displayMenu();
             command = input.next();
             command = command.toLowerCase();
 
             if (command.equals("q")) {
-                keepGoing = false;
+                System.out.println("\nDid you remember to save your file?\n");
+                System.out.println("Type 'sa' to save your file, or 'q' again to quit for good.\n");
+                String finalAction = input.next();
+                if (finalAction.equals("q")) {
+                    keepGoing = false;
+                } else if (finalAction.equals("sa")) {
+                    System.out.println("Thanks for saving! Quitting now...");
+                    saveItemList();
+                    keepGoing = false;
+                }
             } else {
                 processCommand(command);
             }
         }
-
         System.out.println("\nBye bye!");
     }
 
@@ -47,10 +86,12 @@ public class OrgApp {
         System.out.println("\te -> edit an item");
         System.out.println("\tv -> view all items");
         System.out.println("\td -> delete an item");
+        System.out.println("\tsa -> save item list to file");
+        System.out.println("\tl -> load item list from file");
         System.out.println("\tq -> quit\n");
     }
 
-    // EFFECTS: initializes scanner
+    // EFFECTS: initializes scanner and provides welcome message
     private void init() {
         input = new Scanner(System.in);
         System.out.println("\nWelcome to Minimize!"
@@ -72,13 +113,16 @@ public class OrgApp {
             deleteItem();
         } else if (command.equals("q")) {
             System.out.println("quit");
+        } else if (command.equals("sa")) {
+            saveItemList();
+        } else if (command.equals("l")) {
+            loadItemList();
         } else {
             System.out.println("Selection is not valid...\n");
         }
     }
 
     /*
-     * REQUIRES: Name provided is unique, value is 0 or above and a whole number
      * MODIFIES: this
      * EFFECTS: Add a new item to the list, given user inputs
      */
@@ -87,32 +131,32 @@ public class OrgApp {
         String itemName = input.next();
         itemName += input.nextLine();
 
-        System.out.print("Enter category of the item:\n");
-        String itemCategory = categorySelection();
-
-        System.out.print("Enter status of the item:\n");
-        String itemStatus = itemStatus();
-
-        System.out.print("Enter the value of the item: $");
-        int amount = input.nextInt();
-
-        if (amount >= 0) {
-            itemList.addItem(itemName, itemCategory, itemStatus, amount);
-            System.out.println("\nYour item " + itemName + " has been added.");
-            System.out.println("\nHere is an updated list of all the items :");
-            System.out.println(itemList.allListItems());
+        if (itemList.nameExists(itemName)) {
+            System.out.println("This name already exists, choose another name.\n");
         } else {
-            System.out.println("Cannot give an item a negative value...\n");
+            System.out.print("Enter category of the item:\n");
+            String itemCategory = categorySelection();
+            System.out.print("Enter status of the item:\n");
+            String itemStatus = itemStatus();
+            System.out.print("Enter the value of the item: $");
+            double amount = input.nextDouble();
+
+            if (amount >= 0) {
+                itemList.addItem(itemName, itemCategory, itemStatus, amount);
+                System.out.println("\nYour item " + itemName + " has been added.");
+                System.out.println("\nHere is an updated list of all the items :");
+                System.out.println(itemList.allListItems());
+            } else {
+                System.out.println("Cannot give an item a negative value...\n");
+            }
         }
     }
 
     /*
-     * MODIFIES: this
-     * EFFECTS: processes user command
+     * EFFECTS: prompts user to select which category to select, and returns it
      */
     private String categorySelection() {
         String categorySel = "";
-
         while (!(categorySel.equals("f") || categorySel.equals("e") || categorySel.equals("c")
                 || categorySel.equals("h") || categorySel.equals("o"))) {
             System.out.println("\tf for food");
@@ -143,50 +187,23 @@ public class OrgApp {
      */
     private String searchItem() {
         System.out.println("Please enter the category you wish to search for :");
-        String selected = searchSelection();
+        String selected = categorySelection();
         System.out.println("\nYour search result for category " + selected + " returns these items : ");
         if (itemList.countListItems() == 0) {
             System.out.println("Your list is empty!\n");
         } else {
-            System.out.println("\nHere is a list of all the items : \n");
-            System.out.println(itemList.allListItems());
+            if (itemList.searchItemCategory(selected).length() == 0) {
+                System.out.println("Nothing is in this category.\n");
+            } else {
+                System.out.println(itemList.searchItemCategory(selected));
+            }
         }
         return itemList.searchItemCategory(selected);
     }
 
-    /*
-     * MODIFIES: this
-     * EFFECTS: processes user command
-     */
-    private String searchSelection() {
-        String selection = "";
-
-        while (!(selection.equals("f") || selection.equals("e") || selection.equals("c")
-                || selection.equals("h") || selection.equals("o"))) {
-            System.out.println("\tf for food");
-            System.out.println("\te for electronics");
-            System.out.println("\tc for clothing");
-            System.out.println("\th for home");
-            System.out.println("\to for other");
-            selection = input.next();
-        }
-
-        if (selection.equals("f")) {
-            return "Food";
-        } else if (selection.equals("e")) {
-            return "Electronics";
-        } else if (selection.equals("c")) {
-            return "Clothing";
-        } else if (selection.equals("h")) {
-            return "Home";
-        } else {
-            return "Other";
-        }
-    }
 
     /*
-     * MODIFIES: this
-     * EFFECTS: processes user command
+     * EFFECTS: prompts user to select which status to choose, and returns it
      */
     private String itemStatus() {
         String statusSel = "";
@@ -222,9 +239,8 @@ public class OrgApp {
     }
 
     /*
-     * REQUIRES: Name must exist
      * MODIFIES: this
-     * EFFECTS: After selecting existing item in list, provide new name, and update name of existing item with new
+     * EFFECTS: Given name of item to edit, will make the appropriate changes
      */
     private String editItem() {
         String editName = "";
@@ -238,21 +254,93 @@ public class OrgApp {
             editName = input.next();
             editName += input.nextLine();
 
-            if (itemList.nameExists(editName)) {
-                System.out.println("Provide the new name you wish to use:");
-                editNewName = input.next();
-                editNewName += input.nextLine();
-                itemList.editItemName(editName, editNewName);
-                System.out.println("\nHere is a new list of all the items : \n");
-                System.out.println(itemList.allListItems());
-            } else {
-                System.out.println("This item doesn't exist. Please try again. \n");
-                return itemList.allListItems();
-            }
+            checkEditField(editName);
+
+            System.out.println("\nHere is a list of all the items : \n");
+            System.out.println(itemList.allListItems());
         }
         return itemList.allListItems();
     }
 
+    /*
+     * MODIFIES: this
+     * EFFECTS: Check if the item exists in list, then triggers action based on field requested to edit
+     */
+    private void checkEditField(String editName) {
+        if (itemList.nameExists(editName)) {
+            System.out.println("\nWhat do you want to edit?");
+            String editField = editSelection();
+            if (editField.equals("name")) {
+                updateName(editName);
+            } else if (editField.equals("category")) {
+                updateCategory(editName);
+            } else if (editField.equals("status")) {
+                updateStatus(editName);
+            } else {
+                updateValue(editName);
+            }
+        } else {
+            System.out.println("This item doesn't exist. Please try again. \n");
+        }
+    }
+
+    /*
+     * MODIFIES: this
+     * EFFECTS: Update name given new input string
+     */
+    private void updateName(String editName) {
+        String editNewName = "";
+        System.out.println("Provide the new name you wish to use:");
+        editNewName = input.next();
+        editNewName += input.nextLine();
+        if (itemList.nameExists(editNewName)) {
+            System.out.println("This name already exists, choose another name.");
+        } else {
+            itemList.editItemName(editName, editNewName);
+        }
+    }
+
+    /*
+     * MODIFIES: this
+     * EFFECTS: Update category given new selection
+     */
+    private void updateCategory(String editName) {
+        System.out.println("Provide the new category you wish to use:");
+        String newCategory = categorySelection();
+        itemList.editItemCategory(editName, newCategory);
+    }
+
+    /*
+     * MODIFIES: this
+     * EFFECTS: Update status given new selection
+     */
+    private void updateStatus(String editName) {
+        System.out.println("Provide the new status:");
+        String newStatus = itemStatus();
+        itemList.editItemStatus(editName, newStatus);
+    }
+
+    /*
+     * MODIFIES: this
+     * EFFECTS: Update value given new number
+     */
+    private void updateValue(String editName) {
+        System.out.println("Provide the new value:");
+        double newAmount = input.nextDouble();
+
+        if (newAmount >= 0) {
+            itemList.editItemVal(editName, newAmount);
+            System.out.println("\nHere is an updated list of all the items :");
+            System.out.println(itemList.allListItems());
+        } else {
+            System.out.println("Cannot give an item a negative value...\n");
+        }
+    }
+
+    /*
+     * MODIFIES: this
+     * EFFECTS: Deletes item from list, given a name
+     */
     private void deleteItem() {
         if (itemList.countListItems() == 0) {
             System.out.println("Actually.. your list is empty! There's nothing to delete.\n");
@@ -278,4 +366,31 @@ public class OrgApp {
             }
         }
     }
+
+    /*
+     * EFFECTS: prompts user to select which field to edit, and returns it
+     */
+    private String editSelection() {
+        String fieldSel = "";
+
+        while (!(fieldSel.equals("n") || fieldSel.equals("c") || fieldSel.equals("s") || fieldSel.equals("v"))) {
+            System.out.println("\tn for name");
+            System.out.println("\tc for category");
+            System.out.println("\ts for status");
+            System.out.println("\tv for value");
+            fieldSel = input.next();
+        }
+
+        if (fieldSel.equals("n")) {
+            return "name";
+        } else if (fieldSel.equals("c")) {
+            return "category";
+        } else if (fieldSel.equals("s")) {
+            return "status";
+        } else {
+            return "value";
+        }
+    }
+
+
 }

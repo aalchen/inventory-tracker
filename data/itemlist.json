@@ -1,0 +1,9 @@
+{
+    "name": "Amy's Item List",
+    "items": [{
+        "name": "cheeze",
+        "category": "Food",
+        "value": 3,
+        "status": "Keep"
+    }]
+}

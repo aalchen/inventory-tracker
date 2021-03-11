@@ -30,8 +30,11 @@ Mother Nature will also thank you.
 The user stories applicable to *Minimize* will be as follows :
 1. As a user, I want to be able to add an item to my list of items 
 2. As a user, I want to be able to categorize each item
-3. As a user, I want to be able to look up items in my list, filtering by category
-4. As a user, I want to be able to be able to set my item's status (keep, sell, sold)
-5. As a user, I want to be able to edit the name of my item at any time
+3. As a user, I want to be able to be able to set my item's status (keep, sell, sold)
+4. As a user, I want to be able to look up items in my list, filtering by category
+5. As a user, I want to be able to edit any field of any item
 6. As a user, I want to be able to delete an item from my list 
 7. As a user, I want to be able to see a list of all the items in my inventory
+8. As a user, I want to be able to save my list of items to file
+9. As a user, I want to be able to load my list of items from file 
+10. As a user, when I select the quit option from the application menu, I want to be reminded to save my list of items to file and have the option to do so or not

@@ -1,0 +1,17 @@
+{
+    "name": "My item list",
+    "items": [
+        {
+            "name": "Shirt",
+            "category": "Clothing",
+            "value": 30,
+            "status": "Keep"
+        },
+        {
+            "name": "Kettle",
+            "category": "Home",
+            "value": 15,
+            "status": "Sell"
+        }
+    ]
+}

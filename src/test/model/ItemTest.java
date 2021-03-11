@@ -5,24 +5,25 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+//Tests for my Item class
 class ItemTest {
     private Item myItem;
-    private static final String initialName = "Thing 1";
-    private static final String initialStatus = "Active";
-    private static final String initialCategory = "Clothing";
-    private static final int initialBal = 5;
+    private static final String NAME = "Thing 1";
+    private static final String STATUS = "Active";
+    private static final String CATEGORY = "Clothing";
+    private static final int BALANCE = 5;
 
     @BeforeEach
     public void runBefore() {
-        myItem = new Item(initialName, initialCategory, initialStatus, initialBal);
+        myItem = new Item(NAME, CATEGORY, STATUS, BALANCE);
     }
 
     @Test
     public void testGetInitialCard() {
-        assertEquals(initialName, myItem.getName());
-        assertEquals(initialBal, myItem.getValue());
-        assertEquals(initialStatus, myItem.getStatus());
-        assertEquals(initialCategory, myItem.getCategory());
+        assertEquals(NAME, myItem.getName());
+        assertEquals(BALANCE, myItem.getValue());
+        assertEquals(STATUS, myItem.getStatus());
+        assertEquals(CATEGORY, myItem.getCategory());
     }
 
     @Test

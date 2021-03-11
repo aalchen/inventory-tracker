@@ -1,17 +1,22 @@
+// To learn how to make doubles return 2 decimal points, I used mkyong.com as reference to use String.format
+
 package model;
 
-// The Item class represents the properties of an item (its name, category, status, and dollar value)
-public class Item {
+import org.json.JSONObject;
+import persistence.Writable;
+
+// Represents the properties of an item (its name, category, status, and dollar value)
+public class Item implements Writable {
     private String name;
     private String category;
-    private int value;
+    private double value;
     private String status;
 
     /*
      * MODIFIES: this
      * EFFECTS: Assigns variables to object, and capitalizes strings
      */
-    public Item(String name, String category, String status, int value) {
+    public Item(String name, String category, String status, double value) {
         this.name = name.trim();
         this.value = value;
         this.category = category;
@@ -35,11 +40,10 @@ public class Item {
     }
 
     /*
-     * REQUIRES: Integer must be a non-negative value
      * MODIFIES: this
      * EFFECTS: Changes existing value to the new value
      */
-    public void setValue(int newValue) {
+    public void setValue(double newValue) {
         this.value = newValue;
     }
 
@@ -61,7 +65,7 @@ public class Item {
     /*
      * EFFECTS: Return the value of the item
      */
-    public int getValue() {
+    public double getValue() {
         return value;
     }
 
@@ -77,6 +81,20 @@ public class Item {
      */
     public String getCategory() {
         return category;
+    }
+
+    /*
+     * EFFECTS: Returns as a JSON object
+     */
+    //I used the JsonSerializationDemo as a reference for this code
+    @Override
+    public JSONObject toJson() {
+        JSONObject json = new JSONObject();
+        json.put("name", name);
+        json.put("category", category);
+        json.put("status", status);
+        json.put("value", value);
+        return json;
     }
 
 }
