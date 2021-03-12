@@ -1,17 +1,17 @@
 package ui;
 
-import model.Item;
 import model.ItemList;
-import sun.jvm.hotspot.debugger.*;
-import sun.jvm.hotspot.types.CIntegerType;
-import sun.jvm.hotspot.types.JDoubleField;
-import sun.jvm.hotspot.types.Type;
-import sun.jvm.hotspot.types.WrongTypeException;
+import persistence.JsonReader;
+import persistence.JsonWriter;
+
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.table.DefaultTableModel;
 
 //This class represents the GUI for my application
 //I used the Oracle Java Documentation "ListDemo.java" file as reference
@@ -25,17 +25,34 @@ public class TestGUI extends JPanel
         implements ListSelectionListener {
     private JList list;
     private ItemList listModel;
+    private JsonWriter jsonWriter;
+    private JsonReader jsonReader;
 
     private static final String addString = "Add Item";
     private static final String deleteString = "Delete Item";
     private static final String editString = "Edit Item";
+    private static final String loadString = "Load List";
+    private static final String saveString = "Save List";
+    private static final String viewString = "View List";
     private JButton deleteButton;
     private JButton editButton;
+    private JButton saveButton;
+    private JButton loadButton;
+    private JButton viewButton;
     private JTextField itemName;
     private JTextField categoryName;
     private JTextField statusName;
     private JTextField valueNum;
-    private DefaultListModel<String> model;
+    private JLabel newName;
+    private JLabel newCategory;
+    private JLabel newStatus;
+    private JLabel newValue;
+    private DefaultListModel<String> modelName;
+    ItemList itemList = new ItemList("Amy's Item List");
+    private static final String JSON_STORE = "./data/itemlist.json";
+    JButton addButton;
+    AddListener addListener;
+    JPanel buttonPane;
 
     //turn into double later
 //    private JTextField valueNum;
@@ -44,25 +61,50 @@ public class TestGUI extends JPanel
     public TestGUI() {
         super(new BorderLayout());
 
+        jsonWriter = new JsonWriter(JSON_STORE);
+        jsonReader = new JsonReader(JSON_STORE);
         listModel = new ItemList("Amy's List");
         listModel.addItem("Cheese", "Food", "Keep", 9.99);
         listModel.addItem("Sweater", "Clothing", "Sell", 15);
 
-        model = new DefaultListModel<>();
-        for (int i = 0; i < listModel.countListItems(); i++) {
-            model.addElement(listModel.returnListItem(i).getName());
-        }
+        makeTable();
 
         //Create the list and put it in a scroll pane.
-        list = new JList(model);
+        list = new JList(modelName);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.addListSelectionListener(this);
         list.setVisibleRowCount(15);
         JScrollPane listScrollPane = new JScrollPane(list);
 
-        JButton addButton = new JButton(addString);
-        AddListener addListener = new AddListener(addButton);
+        makeButton();
+        makeInputBoxes();
+
+        //Create a panel that uses BoxLayout.
+        buttonPane = new JPanel();
+        buttonPane.setLayout(new BoxLayout(buttonPane,
+                BoxLayout.LINE_AXIS));
+
+        buttonPanelUI();
+
+        add(listScrollPane, BorderLayout.CENTER);
+        add(buttonPane, BorderLayout.PAGE_END);
+    }
+
+    public void makeTable() {
+        //TODO: put into DefaultTableModel
+//        DefaultTableModel tableModel = new DefaultTableModel();
+//        JTable table = new JTable(tableModel);
+
+        modelName = new DefaultListModel<>();
+        for (int i = 0; i < listModel.countListItems(); i++) {
+            modelName.addElement(listModel.returnListItem(i).getName());
+        }
+    }
+
+    public void makeButton() {
+        addButton = new JButton(addString);
+        addListener = new AddListener(addButton);
         addButton.setActionCommand(addString);
         addButton.addActionListener(addListener);
         addButton.setEnabled(false);
@@ -75,6 +117,20 @@ public class TestGUI extends JPanel
         editButton.setActionCommand(editString);
         editButton.addActionListener(new EditListener());
 
+        saveButton = new JButton(saveString);
+        saveButton.setActionCommand(saveString);
+        saveButton.addActionListener(new SaveListener());
+
+        loadButton = new JButton(loadString);
+        loadButton.setActionCommand(loadString);
+        loadButton.addActionListener(new LoadListener());
+
+        viewButton = new JButton(viewString);
+        viewButton.setActionCommand(viewString);
+        viewButton.addActionListener(new ViewListener());
+    }
+
+    public void makeInputBoxes() {
         itemName = new JTextField(10);
         itemName.addActionListener(addListener);
         itemName.getDocument().addDocumentListener(addListener);
@@ -92,17 +148,13 @@ public class TestGUI extends JPanel
         valueNum = new JTextField(10);
         valueNum.addActionListener(addListener);
         valueNum.getDocument().addDocumentListener(addListener);
+    }
 
-        //Create a panel that uses BoxLayout.
-        JPanel buttonPane = new JPanel();
-        buttonPane.setLayout(new BoxLayout(buttonPane,
-                BoxLayout.LINE_AXIS));
-
-        JLabel newName = new JLabel("Name:");
-        JLabel newCategory = new JLabel("Category:");
-        JLabel newStatus = new JLabel("Status:");
-        JLabel newValue = new JLabel("Value ($):");
-
+    public void buttonPanelUI() {
+        newName = new JLabel("Name:");
+        newCategory = new JLabel("Category:");
+        newStatus = new JLabel("Status:");
+        newValue = new JLabel("Value ($):");
         buttonPane.add(Box.createHorizontalStrut(5));
         buttonPane.add(newName);
         buttonPane.add(itemName);
@@ -117,10 +169,12 @@ public class TestGUI extends JPanel
         buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
         buttonPane.add(deleteButton);
         buttonPane.add(editButton);
-        buttonPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-
-        add(listScrollPane, BorderLayout.CENTER);
-        add(buttonPane, BorderLayout.PAGE_END);
+        buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
+        buttonPane.add(saveButton);
+        buttonPane.add(loadButton);
+        buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
+        buttonPane.add(viewButton);
+//        buttonPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     }
 
     class DeleteListener implements ActionListener {
@@ -131,7 +185,7 @@ public class TestGUI extends JPanel
 
             int index = list.getSelectedIndex();
             listModel.delItemName(listModel.returnListItem(index).getName());
-            model.remove(index);
+            modelName.remove(index);
 
             int size = listModel.countListItems();
 
@@ -150,12 +204,57 @@ public class TestGUI extends JPanel
         }
     }
 
-
     class EditListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             JPanel buttonPane = new JPanel();
             JOptionPane.showMessageDialog(buttonPane,
                     "editing...");
+        }
+    }
+
+    class ViewListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            JPanel buttonPane = new JPanel();
+            JOptionPane.showMessageDialog(buttonPane,
+                    listModel.allListItems());
+        }
+    }
+
+    class LoadListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            loadItemList();
+            JPanel buttonPane = new JPanel();
+            JOptionPane.showMessageDialog(buttonPane,
+                    "Loading... ");
+        }
+    }
+
+    class SaveListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            saveItemList();
+            JPanel buttonPane = new JPanel();
+            JOptionPane.showMessageDialog(buttonPane,
+                    "Saved!");
+        }
+    }
+
+    private void saveItemList() {
+        try {
+            jsonWriter.open();
+            jsonWriter.write(listModel);
+            jsonWriter.close();
+            System.out.println("Saved " + listModel.getName() + " to " + JSON_STORE + "\n");
+        } catch (FileNotFoundException e) {
+            System.out.println("Unable to write to file: " + JSON_STORE);
+        }
+    }
+
+    private void loadItemList() {
+        try {
+            listModel = jsonReader.read();
+            System.out.println("Loaded " + listModel.getName() + " from " + JSON_STORE + "\n");
+        } catch (IOException e) {
+            System.out.println("Unable to read from file: " + JSON_STORE);
         }
     }
 
@@ -192,25 +291,22 @@ public class TestGUI extends JPanel
 
             listModel.addItem(name, category, status, value);
 
-            model.insertElementAt(name, index);
+            modelName.insertElementAt(name, index);
 
-            //If we just wanted to add to the end, we'd do this:
-            //listModel.addElement(employeeName.getText());
-            JPanel buttonPane = new JPanel();
-
-            //Working with added items!!
-            JOptionPane.showMessageDialog(buttonPane,
-                    listModel.allListItems());
             //Reset the text field
+            resetValues();
+
+            //Select the new item and make it visible.
+            list.setSelectedIndex(index);
+            list.ensureIndexIsVisible(index);
+        }
+
+        public void resetValues() {
             itemName.requestFocusInWindow();
             itemName.setText("");
             categoryName.setText("");
             statusName.setText("");
             valueNum.setText("");
-
-            //Select the new item and make it visible.
-            list.setSelectedIndex(index);
-            list.ensureIndexIsVisible(index);
         }
 
         //This method tests for string equality. You could certainly

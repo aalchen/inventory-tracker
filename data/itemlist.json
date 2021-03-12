@@ -1,9 +1,17 @@
 {
-    "name": "Amy's Item List",
-    "items": [{
-        "name": "cheeze",
-        "category": "Food",
-        "value": 3,
-        "status": "Keep"
-    }]
+    "name": "Amy's List",
+    "items": [
+        {
+            "name": "Cheese",
+            "category": "Food",
+            "value": 9.99,
+            "status": "Keep"
+        },
+        {
+            "name": "Sweater",
+            "category": "Clothing",
+            "value": 15,
+            "status": "Sell"
+        }
+    ]
 }
