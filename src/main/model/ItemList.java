@@ -1,5 +1,6 @@
 package model;
 
+import exceptions.DuplicateNameException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import persistence.Writable;
@@ -162,7 +163,7 @@ public class ItemList implements Writable {
      */
     public Boolean nameExists(String checkName) {
         for (int i = 0; i < itemList.size(); i++) {
-            if (checkName.trim().equals(itemList.get(i).getName())) {
+            if (checkName.trim().toLowerCase().equals(itemList.get(i).getName().toLowerCase())) {
                 return true;
             }
         }
@@ -198,4 +199,3 @@ public class ItemList implements Writable {
         return listName;
     }
 }
-

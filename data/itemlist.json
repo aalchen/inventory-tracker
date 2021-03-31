@@ -12,6 +12,12 @@
             "category": "Clothing",
             "value": 15,
             "status": "Sell"
+        },
+        {
+            "name": "Computer",
+            "category": "Electronics",
+            "value": 5000,
+            "status": "Keep"
         }
     ]
 }

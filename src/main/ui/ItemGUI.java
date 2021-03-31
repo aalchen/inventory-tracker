@@ -18,8 +18,6 @@ import javax.swing.event.*;
 
 //This class represents the GUI for my application
 //I used the Oracle Java Documentation "ListDemo.java" and "BorderLayoutDemo.java" file as reference
-//TODO: Add functionality for Edit, Search, reminder to save
-//TODO: show all info for all items in the main display screen, instead of just item name (or see all details button)
 public class ItemGUI extends JPanel
         implements ListSelectionListener {
     private JList list;
@@ -68,7 +66,6 @@ public class ItemGUI extends JPanel
      * EFFECTS: Constructor of the GUI, and establishing JSON file location
      */
     public ItemGUI() {
-
         super(new BorderLayout());
 
         frame = new JFrame("Minimize");
@@ -78,20 +75,17 @@ public class ItemGUI extends JPanel
         jsonReader = new JsonReader(JSON_STORE);
 
         showItems();
-
         makeButton();
         makeInputBoxes();
 
         addPane = new JPanel();
         addPane.setLayout(new BoxLayout(addPane,
                 BoxLayout.LINE_AXIS));
-
         secondPane = new JPanel();
         secondPane.setLayout(new BoxLayout(secondPane,
                 BoxLayout.LINE_AXIS));
 
         buttonPanelUI();
-
         frameSetUp();
 
         frame.pack();
@@ -104,9 +98,6 @@ public class ItemGUI extends JPanel
      * EFFECTS: Actual items in the list show up on GUI, and creates initial list with minimum dimensions
      */
     public void showItems() {
-//        DefaultTableModel tableModel = new DefaultTableModel();
-//        JTable table = new JTable(tableModel);
-//        tableModel.addColumn("Item Name");
         listModel = new ItemList("Amy's List");
         listModel.addItem("Cheese", "Food", "Keep", 9.99);
         listModel.addItem("Sweater", "Clothing", "Sell", 15);
@@ -115,6 +106,7 @@ public class ItemGUI extends JPanel
         for (int i = 0; i < listModel.countListItems(); i++) {
             modelName.addElement(listModel.returnListItem(i).getName());
         }
+
         list = new JList(modelName);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
@@ -131,7 +123,6 @@ public class ItemGUI extends JPanel
      */
     public void frameSetUp() {
         frame.setLayout(new BorderLayout());
-
         frame.getContentPane().add(listScrollPane, BorderLayout.PAGE_START);
         frame.getContentPane().add(addPane, BorderLayout.CENTER);
         frame.getContentPane().add(secondPane, BorderLayout.PAGE_END);
@@ -139,18 +130,17 @@ public class ItemGUI extends JPanel
 
     /*
      * MODIFIES: this
-     * EFFECTS: Plays the sound given the name of a wav file
+     * EFFECTS: Plays the audioDirectory given the name of a wav file
      */
-    // I got help for this code via http://suavesnippets.blogspot.com/2011/06/add-sound-on-jbutton-click-in-java.html
-    public void playSound(String soundName) {
+    //Got reference for this from AudioInputStream/Clip documentation from Oracle documentation
+    public void play(String audioDirectory) {
         try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(soundName).getAbsoluteFile());
-            Clip clip = AudioSystem.getClip();
-            clip.open(audioInputStream);
-            clip.start();
-        } catch (Exception ex) {
-            System.out.println("Error with playing sound.");
-            ex.printStackTrace();
+            AudioInputStream audio = AudioSystem.getAudioInputStream(new File(audioDirectory));
+            Clip aud = AudioSystem.getClip();
+            aud.open(audio);
+            aud.start();
+        } catch (Exception e) {
+            System.out.println("Sound is not working :(");
         }
     }
 
@@ -237,7 +227,6 @@ public class ItemGUI extends JPanel
         secondPane.add(loadButton);
         secondPane.add(new JSeparator(SwingConstants.VERTICAL));
         secondPane.add(viewButton);
-//        buttonPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     }
 
     /*
@@ -303,7 +292,6 @@ public class ItemGUI extends JPanel
 
             if (size == 0) {
                 deleteButton.setEnabled(false);
-
             } else { //Select an index.
                 if (index == listModel.countListItems()) {
                     index--;
@@ -312,7 +300,7 @@ public class ItemGUI extends JPanel
                 list.setSelectedIndex(index);
                 list.ensureIndexIsVisible(index);
             }
-            playSound("jasmine.wav");
+            play("./data/jasmine.wav");
         }
     }
 
@@ -324,7 +312,7 @@ public class ItemGUI extends JPanel
         public void actionPerformed(ActionEvent e) {
             JPanel buttonPane = new JPanel();
             JOptionPane.showMessageDialog(buttonPane,
-                    "editing...");
+                    "Editing...");
         }
     }
 
@@ -333,10 +321,14 @@ public class ItemGUI extends JPanel
      * EFFECTS: Show all items in the item list in an dialog box
      */
     class ViewListener implements ActionListener {
+        //Icon is from Freepik
+        Icon icon = new ImageIcon("./data/checklisticon.png");
+
         public void actionPerformed(ActionEvent e) {
             JPanel buttonPane = new JPanel();
+            //I used the Oracle Java Documentation for JOptionPane as reference for this code
             JOptionPane.showMessageDialog(buttonPane,
-                    listModel.allListItems());
+                    listModel.allListItems(), "All List Items", JOptionPane.INFORMATION_MESSAGE, icon);
         }
     }
 
@@ -425,18 +417,17 @@ public class ItemGUI extends JPanel
             if (index == -1) {
                 index = 0;
             } else {
-                index++;
+                index = list.getModel().getSize();
             }
 
             listModel.addItem(name, updatedCategory, updatedStatus, value);
-
             modelName.insertElementAt(name, index);
 
             resetValues();
 
             list.setSelectedIndex(index);
             list.ensureIndexIsVisible(index);
-            playSound("gia.wav");
+            play("./data/gia.wav");
 
 
         }
@@ -513,17 +504,8 @@ public class ItemGUI extends JPanel
      */
     public void valueChanged(ListSelectionEvent e) {
         if (!e.getValueIsAdjusting()) {
-
-            if (list.getSelectedIndex() == -1) {
-                //No selection, disable fire button.
-                deleteButton.setEnabled(false);
-
-            } else {
-                //Selection, enable the fire button.
-                deleteButton.setEnabled(true);
-            }
+            deleteButton.setEnabled(list.getSelectedIndex() != -1);
         }
     }
 
 }
-

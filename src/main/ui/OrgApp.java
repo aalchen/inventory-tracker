@@ -1,5 +1,6 @@
 package ui;
 
+import exceptions.DuplicateNameException;
 import model.ItemList;
 import persistence.JsonReader;
 import persistence.JsonWriter;
@@ -21,7 +22,7 @@ public class OrgApp {
     private JsonReader jsonReader;
 
     // EFFECTS: runs the Organization application
-    public OrgApp() {
+    public OrgApp() throws DuplicateNameException {
         jsonWriter = new JsonWriter(JSON_STORE);
         jsonReader = new JsonReader(JSON_STORE);
         runApp();
@@ -52,7 +53,7 @@ public class OrgApp {
 
     // MODIFIES: this
     // EFFECTS: processes user input
-    private void runApp() {
+    private void runApp() throws DuplicateNameException {
         boolean keepGoing = true;
         init();
         while (keepGoing) {
@@ -100,7 +101,7 @@ public class OrgApp {
 
     // MODIFIES: this
     // EFFECTS: processes user command
-    private void processCommand(String command) {
+    private void processCommand(String command) throws DuplicateNameException {
         if (command.equals("a")) {
             addItem();
         } else if (command.equals("s")) {
@@ -126,7 +127,7 @@ public class OrgApp {
      * MODIFIES: this
      * EFFECTS: Add a new item to the list, given user inputs
      */
-    private void addItem() {
+    private void addItem() throws DuplicateNameException {
         System.out.print("Enter name of the item: ");
         String itemName = input.next();
         itemName += input.nextLine();
@@ -242,7 +243,7 @@ public class OrgApp {
      * MODIFIES: this
      * EFFECTS: Given name of item to edit, will make the appropriate changes
      */
-    private String editItem() {
+    private String editItem() throws DuplicateNameException {
         String editName = "";
         String editNewName = "";
         if (itemList.countListItems() == 0) {
@@ -266,7 +267,7 @@ public class OrgApp {
      * MODIFIES: this
      * EFFECTS: Check if the item exists in list, then triggers action based on field requested to edit
      */
-    private void checkEditField(String editName) {
+    private void checkEditField(String editName) throws DuplicateNameException {
         if (itemList.nameExists(editName)) {
             System.out.println("\nWhat do you want to edit?");
             String editField = editSelection();
@@ -288,7 +289,7 @@ public class OrgApp {
      * MODIFIES: this
      * EFFECTS: Update name given new input string
      */
-    private void updateName(String editName) {
+    private void updateName(String editName) throws DuplicateNameException {
         String editNewName = "";
         System.out.println("Provide the new name you wish to use:");
         editNewName = input.next();
@@ -341,7 +342,7 @@ public class OrgApp {
      * MODIFIES: this
      * EFFECTS: Deletes item from list, given a name
      */
-    private void deleteItem() {
+    private void deleteItem() throws DuplicateNameException {
         if (itemList.countListItems() == 0) {
             System.out.println("Actually.. your list is empty! There's nothing to delete.\n");
         } else {
